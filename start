@@ -1,1 +1,4 @@
-python3 -m AnonXMusic
+#!/bin/bash
+python3 -m AnonXMusic &
+python3 toxic.py &
+wait
