@@ -16,10 +16,10 @@ from pyrogram import errors
 from pyrogram.enums import MessageEntityType
 from pyrogram.types import Message
 from youtubesearchpython.__future__ import VideosSearch
-from Toxic import app
-from Toxic.logging import LOGGER
-from Toxic.utils.database import is_on_off
-from Toxic.utils.formatters import time_to_seconds
+from AnonXMusic import app
+from AnonXMusic.logging import LOGGER
+from AnonXMusic.utils.database import is_on_off
+from AnonXMusic.utils.formatters import time_to_seconds
 from config import API_URL, API_KEY, DOWNLOADS_DIR
 
 @dataclass
