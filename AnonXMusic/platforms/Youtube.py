@@ -451,13 +451,40 @@ class YouTubeAPI:
                 x.download([link])
             return f"downloads/{title}.mp3"
 
-if songvideo:
-    if dl := await self.download_with_api(link, True):
-        return dl
-    else:
-        return await self.song_video_dl(link)
-else:
-    if dl := await self.download_with_api(link, False):
-        return dl
-    else:
-        return await self.song_audio_dl(link)
+        if songvideo:
+            if dl := await self.download_with_api(link, True):
+                return str(dl)
+            return await loop.run_in_executor(None, song_video_dl)
+        elif songaudio:
+            if dl := await self.download_with_api(link):
+                return str(dl)
+            return await loop.run_in_executor(None, song_audio_dl)
+        elif video:
+            direct = True
+            if await is_on_off(1):
+                downloaded_file = await loop.run_in_executor(None, video_dl)
+            else:
+                if dl := await self.download_with_api(link, True):
+                    return str(dl), direct
+                proc = await asyncio.create_subprocess_exec(
+                    "yt-dlp",
+                    "--cookies", self.get_cookie_file() or "",
+                    "-g",
+                    "-f",
+                    "best[height<=?720][width<=?1280]",
+                    link,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                stdout, stderr = await proc.communicate()
+                if stdout:
+                    downloaded_file = stdout.decode().split("\n")[0]
+                    direct = None
+                else:
+                    return "", direct
+        else:
+            direct = True
+            if dl := await self.download_with_api(link):
+                return str(dl), direct
+            downloaded_file = await loop.run_in_executor(None, audio_dl)
+        return downloaded_file, direct 
