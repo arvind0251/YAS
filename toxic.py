@@ -2,10 +2,10 @@ import os
 import logging
 import tempfile
 import random
-from datetime import datetime
 import config
 import pytz
 import requests
+from datetime import datetime
 from gtts import gTTS
 from langdetect import detect
 from telegram import Update
@@ -40,7 +40,7 @@ def text_to_ogg(text: str, lang: str = "hi") -> str:
     return ogg_path
 
 def get_kolkata_datetime() -> str:
-    tz = pytz.timezone('Asia/Kolkata')
+    tz = pytz.timezone("Asia/Kolkata")
     now = datetime.now(tz)
     return now.strftime("Aaj ki tareekh: %d-%m-%Y, samay: %I:%M %p")
 
