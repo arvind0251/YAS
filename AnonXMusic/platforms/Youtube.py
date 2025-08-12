@@ -21,6 +21,7 @@ from AnonXMusic.logging import LOGGER
 from AnonXMusic.utils.database import is_on_off
 from AnonXMusic.utils.formatters import time_to_seconds
 from config import API_URL, API_KEY, DOWNLOADS_DIR
+from typing import Dict
 
 @dataclass
 class DownloadResult:
@@ -79,7 +80,7 @@ class YouTubeAPI:
             LOGGER(__name__).warning("Error accessing cookie directory: %s", e)
             return None
 
-    def _get_headers(self, url: str, base_headers: dict[str, str]) -> dict[str, str]:
+    def _get_headers(self, url: str, base_headers: Dict[str, str]) -> Dict[str, str]:
         headers = base_headers.copy()
         if API_URL and url.startswith(API_URL):
             headers["X-API-Key"] = API_KEY
