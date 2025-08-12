@@ -452,5 +452,12 @@ class YouTubeAPI:
             return f"downloads/{title}.mp3"
 
         if songvideo:
-            if dl := await self.download_with_api(link, True):
-           
+    if dl := await self.download_with_api(link, True):
+        return dl
+    else:
+        return await self.song_video_dl(link)
+else:
+    if dl := await self.download_with_api(link, False):
+        return dl
+    else:
+        return await self.song_audio_dl(link)
