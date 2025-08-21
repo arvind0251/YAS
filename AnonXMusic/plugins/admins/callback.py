@@ -345,7 +345,11 @@ async def del_back_playlist(client, CallbackQuery, _):
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
                 )
+                if db.get(chat_id) and len(db[chat_id]) > 0:
                 db[chat_id][0]["mystic"] = run
+            else:    
+    # handle empty playlist safely
+            return
                 db[chat_id][0]["markup"] = "stream"
             await CallbackQuery.edit_message_text(txt, reply_markup=close_markup(_))
 
@@ -395,3 +399,4 @@ async def markup_timer():
 
 
 asyncio.create_task(markup_timer())
+
