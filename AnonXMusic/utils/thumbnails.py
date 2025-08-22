@@ -1,12 +1,10 @@
 import os
 import re
-
 import aiofiles
 import aiohttp
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 from unidecode import unidecode
 from youtubesearchpython.__future__ import VideosSearch
-
 from AnonXMusic import app
 from config import YOUTUBE_IMG_URL
 
@@ -30,8 +28,8 @@ def clear(text):
 
 
 async def get_thumb(videoid):
-    if os.path.isfile(f"cache/{videoid}.png"):
-        return f"cache/{videoid}.png"
+    if os.path.isfile(f"cache/{videoid}.gif"):
+        return f"cache/{videoid}.gif"
 
     url = f"https://www.youtube.com/watch?v={videoid}"
     try:
@@ -65,57 +63,60 @@ async def get_thumb(videoid):
                     await f.close()
 
         youtube = Image.open(f"cache/thumb{videoid}.png")
-        image1 = changeImageSize(1280, 720, youtube)
-        image2 = image1.convert("RGBA")
-        background = image2.filter(filter=ImageFilter.BoxBlur(10))
-        enhancer = ImageEnhance.Brightness(background)
-        background = enhancer.enhance(0.5)
-        draw = ImageDraw.Draw(background)
-        arial = ImageFont.truetype("AnonXMusic/assets/font2.ttf", 30)
-        font = ImageFont.truetype("AnonXMusic/assets/font.ttf", 30)
-        draw.text((1110, 8), unidecode(app.name), fill="white", font=arial)
-        draw.text(
-            (55, 560),
-            f"{channel} | {views[:23]}",
-            (255, 255, 255),
-            font=arial,
-        )
-        draw.text(
-            (57, 600),
-            clear(title),
-            (255, 255, 255),
-            font=font,
-        )
-        draw.line(
-            [(55, 660), (1220, 660)],
-            fill="white",
-            width=5,
-            joint="curve",
-        )
-        draw.ellipse(
-            [(918, 648), (942, 672)],
-            outline="white",
-            fill="white",
-            width=15,
-        )
-        draw.text(
-            (36, 685),
-            "00:00",
-            (255, 255, 255),
-            font=arial,
-        )
-        draw.text(
-            (1185, 685),
-            f"{duration[:23]}",
-            (255, 255, 255),
-            font=arial,
-        )
-        try:
-            os.remove(f"cache/thumb{videoid}.png")
-        except:
-            pass
-        background.save(f"cache/{videoid}.png")
-        return f"cache/{videoid}.png"
+        base = changeImageSize(1280, 720, youtube).convert("RGBA")
+
+        # --- Create Animated Frames ---
+        frames = []
+        for glow in range(150, 255, 15):  # Glow increasing
+            frame = base.copy().convert("RGBA")
+
+            # Dark blurred background
+            bg = frame.filter(ImageFilter.BoxBlur(10))
+            enhancer = ImageEnhance.Brightness(bg)
+            bg = enhancer.enhance(0.6)
+
+            draw = ImageDraw.Draw(bg, "RGBA")
+
+            # Overlay transparent black for aesthetic effect
+            overlay = Image.new("RGBA", bg.size, (0, 0, 0, 80))
+            bg = Image.alpha_composite(bg, overlay)
+
+            # Fonts
+            font_big = ImageFont.truetype("AnonXMusic/assets/font.ttf", 55)
+            font_small = ImageFont.truetype("AnonXMusic/assets/font2.ttf", 32)
+
+            # Song Title with animated glow
+            draw.text((60, 560), clear(title), font=font_big,
+                      fill=(255, glow, 200, 255))
+
+            # Channel + Views
+            draw.text((60, 630), f"{channel} • {views}", font=font_small,
+                      fill=(200, 220, 255, 255))
+
+            # Bot Name side top me
+            draw.text((1020, 20), unidecode(app.name), font=font_small,
+                      fill=(100, glow, 255, 255))
+
+            # Duration bottom right
+            draw.text((1150, 670), f"{duration}", font=font_small,
+                      fill=(255, 255, 255, 255))
+
+            # Time start
+            draw.text((50, 670), "00:00", font=font_small,
+                      fill=(255, 255, 255, 255))
+
+            frames.append(bg)
+
+        # Save animated GIF
+        frames[0].save(f"cache/{videoid}.gif",
+                       save_all=True,
+                       append_images=frames[1:],
+                       duration=120,
+                       loop=0)
+
+        os.remove(f"cache/thumb{videoid}.png")
+        return f"cache/{videoid}.gif"
+
     except Exception as e:
         print(e)
         return YOUTUBE_IMG_URL
